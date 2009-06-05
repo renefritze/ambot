@@ -63,7 +63,7 @@ class Main:
 			user_msgs = self.msgs[user]
 			for msg in user_msgs:
 				msg.send( socket )
-			del user_msgs
+			del self.msgs[user]
 
 	def printhelp(self,user):
 		self.client.sock.send ("SAYPRIVATE %s to deliver a message to an offline user pm to this bot: \"USERNAME MESSAGE\"\n"% (user) )
