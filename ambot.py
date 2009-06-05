@@ -65,14 +65,14 @@ class Main:
 				msg.send( socket )
 			del user_msgs
 
-	def printhelp(self):
-		print "help msg"
+	def printhelp(self,user):
+		self.client.sock.send ("SAYPRIVATE %s to deliver a message to an offline user pm to this bot: \"USERNAME MESSAGE\"\n"% (user) )
 
 	def onsaidprivate(self,user,message):
 		if message == "optout" :
 			print "not implemented"
 		if message == ("help"):
-			self.printhelp
+			self.printhelp( user )
 		else:
 			tokens = message.split()
 			if len(tokens) > 1:
@@ -97,6 +97,7 @@ class Main:
 
 
 	def onload(self,tasc):
+	  self.client = tasc
 	  self.app = tasc.main
 	  self.admins = parselist(self.app.config["admins"],',')
 	  self.users = parselist(self.app.config["users"],',')
