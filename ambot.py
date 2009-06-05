@@ -60,14 +60,10 @@ class Main:
 
 	def deliverPending( self, user, socket ):
 		if user in self.msgs:
-			print "pre sending"
 			user_msgs = self.msgs[user]
 			for msg in user_msgs:
-				print "sending"
 				msg.send( socket )
 			del user_msgs
-		print "PENDING"
-		print self.msgs
 
 	def printhelp(self):
 		print "help msg"
@@ -82,7 +78,6 @@ class Main:
 			if len(tokens) > 1:
 				to_user = tokens[0]
 				msg = ' '.join( tokens[1:] )
-				print msg
 				if  user in self.users or user in self.admins:		
 					self.storeMsg( user, to_user, msg )
 			else:
