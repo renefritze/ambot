@@ -16,68 +16,94 @@ class PersistentList:
 	def remove(self,item):
 		try:
 			self.data.erase(item)
+		except:
+			print "error in erase"
+			
 	def sync(self,item):
-		#write to file
+		print "not impl"
+		
 	def contains(self,item):
 		return item in data
+
+class Message:
+	from_user = ""
+	to_user = ""
+	added = ""
+	msg_text = ""
+
+	def __init__(self, from_u, to_u, msg ):
+		self.msg_text = msg
+		self.from_user = from_u
+		self.to_user = to_u
+		self.added = ctime()
+
+	def send ( self, socket ):
+		msg = ( "(%s) - %s: %s" % (strftime(self.added),self.from_user,self.msg_text) )
+		socket.send( "SAYPRIVATE %s \"%s\" \n" % (self.to_user, msg) )
 
 class Main:
 	chans = []
 	admins = []
-	faqs = dict()
+	user_online = []
+	user_optout = []
+	msgs = dict()
 	filename = ""
-	last_faq = ""
-	last_time = time()
+
 	min_pause = 5.0
-	def getFAQ(self,key,socket):
-	    return "der"
+
+	def storeMsg( self, from_user, to_user, msg ):
+		if not to_user in self.user_optout:
+			if not to_user in self.msgs:
+				self.msgs[to_user] = []
+			self.msgs[to_user].append( Message( from_user, to_user, msg ) )
+		
+
+	def deliverPending( self, user, socket ):
+		if user in self.msgs:
+			print "pre sending"
+			user_msgs = self.msgs[user]
+			for msg in user_msgs:
+				print "sending"
+				msg.send( socket )
+			del user_msgs
+		print "PENDING"
+		print self.msgs
 
 	def printhelp(self):
 		print "help msg"
 
 	def onsaidprivate(self,user,message):
-		tokens = message.split()
-		if tokens[0] == "optout" :
+		if message == "optout" :
 			print "not implemented"
-		if tokens[0].find("help") > 0 :
+		if message == ("help"):
 			self.printhelp
 		else:
-			if len(tokens) > 2:
-				user = tokens[0]
-				msg = tokens[1:]
+			tokens = message.split()
+			if len(tokens) > 1:
+				to_user = tokens[0]
+				msg = ' '.join( tokens[1:] )
+				print msg
+				if  user in self.users or user in self.admins:		
+					self.storeMsg( user, to_user, msg )
 			else:
 				print "error: not enough arguments"
 		
 	def oncommandfromserver(self,command,args,socket):
-	    if command == "ADDUSER" and len(args) > 2:
-			if args[2] == "!faq" and len(args) > 3:
-				now = time()
-				user = args[1]
-				diff = now - self.last_time
-				if diff > self.min_pause :
-					chan = args[0]
-				#if self.chans.find(args[0]) > 0:
-					msg = self.faqs[args[3]]
-					lines = msg.split('\n')
-					for line in lines :
-						socket.send("SAY %s %s\n" % (chan,line))
-						print ("SAY %s %s\n" % (chan,line))
-				self.last_time = time()
-			if args[2] == "!faqlearn" and args[1] in self.admins and len(args) > 4:
-				self.addFaq( args[3], args[4:] )
-			if args[2] == "!faqlist":
-				faqstring = "available faq items are: "
-				for key in self.faqs:
-				    faqstring += key + " "
-				socket.send("SAY %s %s\n" % (args[0],faqstring ))
+		if command == "REMOVEUSER" and len(args) > 0:
+			try:
+				self.user_online.remove( args[0] )
+			except:
+				print ("failed to remove %s from online users" % (args[0]) )
+			
+		if command == "ADDUSER" and len(args) > 2:
+			self.user_online.append( args[0] )
+			self.deliverPending( args[0], socket )
+			
 
-	def ondestroy( self ):
-	    self.saveFaqs()
 
 	def onload(self,tasc):
 	  self.app = tasc.main
 	  self.admins = parselist(self.app.config["admins"],',')
 	  self.users = parselist(self.app.config["users"],',')
-	  self.loadFaqs()
 
 		
