@@ -18,10 +18,10 @@ class PersistentList:
 			self.data.erase(item)
 		except:
 			print "error in erase"
-			
+
 	def sync(self,item):
 		print "not impl"
-		
+
 	def contains(self,item):
 		return item in data
 
@@ -39,7 +39,7 @@ class Message:
 
 	def send ( self, socket ):
 		msg = ( "(%s) - %s: %s" % (strftime(self.added),self.from_user,self.msg_text) )
-		socket.send( "SAYPRIVATE %s \"%s\" \n" % (self.to_user, msg) )
+		self.sayprivate( to_user, msg )
 
 class Main:
 	chans = []
@@ -56,21 +56,27 @@ class Main:
 			if not to_user in self.msgs:
 				self.msgs[to_user] = []
 			self.msgs[to_user].append( Message( from_user, to_user, msg ) )
-		
+
 
 	def deliverPending( self, user, socket ):
 		if user in self.msgs:
 			user_msgs = self.msgs[user]
 			for msg in user_msgs:
 				msg.send( socket )
-			del self.msgs[user]
+			del user_msgs
+
+	def sayprivate(self,user,msg):
+		for line in msg.split("\n"):
+			self.client.sock.send("SAYPRIVATE %s %s\n" % (user,line) )
 
 	def printhelp(self,user):
-		self.client.sock.send ("SAYPRIVATE %s to deliver a message to an offline user pm to this bot: \"USERNAME MESSAGE\"\n"% (user) )
+		self.sayprivate( user,"To deliver a message to an offline user, pm to this bot: \"USERNAME MESSAGE\"\nYou can queue multiple messages if you like." )
 
 	def onsaidprivate(self,user,message):
 		if message == "optout" :
 			print "not implemented"
+		if message == "!help":
+			self.printhelp( user )
 		if message == ("help"):
 			self.printhelp( user )
 		else:
@@ -78,28 +84,29 @@ class Main:
 			if len(tokens) > 1:
 				to_user = tokens[0]
 				msg = ' '.join( tokens[1:] )
-				if  user in self.users or user in self.admins:		
+				if  user in self.users or user in self.admins:
 					self.storeMsg( user, to_user, msg )
+					if to_user in self.user_online:
+						deliverPending( self, to_user, socket )
+						self.sayprivate( user, "the user was found online, the message was sent immediately" )
+					else:
+						self.sayprivate( user, "message queued, will be delivered as soon as the user gets online" )
 			else:
-				print "error: not enough arguments"
-		
+				self.printhelp( user )
+
 	def oncommandfromserver(self,command,args,socket):
 		if command == "REMOVEUSER" and len(args) > 0:
 			try:
 				self.user_online.remove( args[0] )
 			except:
 				print ("failed to remove %s from online users" % (args[0]) )
-			
+
 		if command == "ADDUSER" and len(args) > 2:
 			self.user_online.append( args[0] )
 			self.deliverPending( args[0], socket )
-			
-
 
 	def onload(self,tasc):
 	  self.client = tasc
 	  self.app = tasc.main
 	  self.admins = parselist(self.app.config["admins"],',')
 	  self.users = parselist(self.app.config["users"],',')
-
-		
