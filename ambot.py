@@ -87,7 +87,7 @@ class Main:
 				if  user in self.users or user in self.admins:
 					self.storeMsg( user, to_user, msg )
 					if to_user in self.user_online:
-						deliverPending( self, to_user, socket )
+						self.deliverPending( self, to_user, socket )
 						self.sayprivate( user, "the user was found online, the message was sent immediately" )
 					else:
 						self.sayprivate( user, "message queued, will be delivered as soon as the user gets online" )
