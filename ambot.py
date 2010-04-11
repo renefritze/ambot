@@ -39,7 +39,8 @@ class Message:
 
 	def send ( self, socket ):
 		msg = ( "(%s) - %s: %s" % (strftime(self.added),self.from_user,self.msg_text) )
-		self.sayprivate( to_user, msg )
+		for line in msg.split("\n"):
+			self.client.sock.send("SAYPRIVATE %s %s\n" % (to_user,line) )
 
 class Main:
 	chans = []
