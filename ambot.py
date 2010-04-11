@@ -40,7 +40,7 @@ class Message:
 	def send ( self, socket ):
 		msg = ( "(%s) - %s: %s" % (strftime(self.added),self.from_user,self.msg_text) )
 		for line in msg.split("\n"):
-			socket.send("SAYPRIVATE %s %s\n" % (to_user,line) )
+			socket.send("SAYPRIVATE %s %s\n" % (self.to_user,line) )
 
 class Main:
 	chans = []
