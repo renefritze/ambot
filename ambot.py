@@ -58,11 +58,11 @@ class Main:
 			self.msgs[to_user].append( Message( from_user, to_user, msg ) )
 
 
-	def deliverPending( self, user, socket ):
+	def deliverPending( self, user ):
 		if user in self.msgs:
 			user_msgs = self.msgs[user]
 			for msg in user_msgs:
-				msg.send( socket )
+				msg.send( self.client.sock )
 			del user_msgs
 
 	def sayprivate(self,user,msg):
@@ -87,7 +87,7 @@ class Main:
 				if  user in self.users or user in self.admins:
 					self.storeMsg( user, to_user, msg )
 					if to_user in self.user_online:
-						self.deliverPending( self, to_user, socket )
+						self.deliverPending( self, to_user )
 						self.sayprivate( user, "the user was found online, the message was sent immediately" )
 					else:
 						self.sayprivate( user, "message queued, will be delivered as soon as the user gets online" )
@@ -103,7 +103,7 @@ class Main:
 
 		if command == "ADDUSER" and len(args) > 2:
 			self.user_online.append( args[0] )
-			self.deliverPending( args[0], socket )
+			self.deliverPending( args[0] )
 
 	def onload(self,tasc):
 	  self.client = tasc
