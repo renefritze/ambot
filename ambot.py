@@ -64,7 +64,7 @@ class Main:
 			user_msgs = self.msgs[user]
 			for msg in user_msgs:
 				msg.send( self.client.sock )
-			del user_msgs
+			del self.msgs[user]
 
 	def sayprivate(self,user,msg):
 		for line in msg.split("\n"):
