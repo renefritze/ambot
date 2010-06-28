@@ -102,7 +102,7 @@ class Main:
 			except:
 				print ("failed to remove %s from online users" % (args[0]) )
 
-		if command == "ADDUSER" and len(args) > 2:
+		if command == "ADDUSER" and len(args) > 0:
 			self.user_online.append( args[0] )
 			self.deliverPending( args[0] )
 
