@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from colors import *
 from ParseConfig import *
 import string
 from utilities import *
