@@ -1,9 +1,0 @@
-%serveraddr=localhost;
-serveraddr=taspringmaster.clan-sy.com;
-nick=FaqBot;
-admins=_koshi_,BrainDamage,koshi007,WindyPeet;
-serverport=8200;
-plugins=help,faq,join_channels;
-channels=springlobby;
-password=;
-faqfile=faqs.txt

@@ -3,6 +3,7 @@ from tasbot.ParseConfig import *
 import string
 from tasbot.utilities import *
 from time import *
+from tasbot.Plugin import IPlugin
 
 class PersistentList:
 	filename = ""
@@ -41,15 +42,17 @@ class Message:
 		for line in msg.split("\n"):
 			socket.send("SAYPRIVATE %s %s\n" % (self.to_user,line) )
 
-class Main:
-	chans = []
-	admins = []
-	user_online = []
-	user_optout = []
-	msgs = dict()
-	filename = ""
+class Main(IPlugin):
+	def __init__(self,name,tasc):
+		IPlugin.__init__(self,name,tasc)
+		chans = []
+		admins = []
+		user_online = []
+		user_optout = []
+		msgs = dict()
+		filename = ""
 
-	min_pause = 5.0
+		min_pause = 5.0
 
 	def storeMsg( self, from_user, to_user, msg ):
 		if not to_user in self.user_optout:
