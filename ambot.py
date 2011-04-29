@@ -45,14 +45,14 @@ class Message:
 class Main(IPlugin):
 	def __init__(self,name,tasc):
 		IPlugin.__init__(self,name,tasc)
-		chans = []
-		admins = []
-		user_online = []
-		user_optout = []
-		msgs = dict()
-		filename = ""
+		self.chans = []
+		self.admins = []
+		self.user_online = []
+		self.user_optout = []
+		self.msgs = dict()
+		self.filename = ""
 
-		min_pause = 5.0
+		self.min_pause = 5.0
 
 	def storeMsg( self, from_user, to_user, msg ):
 		if not to_user in self.user_optout:
