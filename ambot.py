@@ -1,32 +1,11 @@
 # -*- coding: utf-8 -*-
 import string
 from time import *
+import cPickle as pickle
 
 from tasbot.config import Config
 from tasbot.utilities import *
 from tasbot.plugin import IPlugin
-
-
-class PersistentList:
-	filename = ""
-	data = []
-	def __init__(self,name):
-		self.filename = name + ".list"
-
-	def add(self,item):
-		self.data.append(item)
-
-	def remove(self,item):
-		try:
-			self.data.erase(item)
-		except:
-			print "error in erase"
-
-	def sync(self,item):
-		print "not impl"
-
-	def contains(self,item):
-		return item in data
 
 
 class Message:
@@ -52,6 +31,7 @@ class Main(IPlugin):
 		self.msgs = dict()
 		self.filename = ""
 		self.min_pause = 5.0
+		self.message_dump = 'messages.bin'
 
 	def storeMsg( self, from_user, to_user, msg ):
 		if not to_user in self.user_optout:
@@ -103,6 +83,13 @@ class Main(IPlugin):
 			self.deliverPending( args[0] )
 
 	def onload(self,tasc):
-	  self.app = tasc.main
-	  self.admins = self.app.config.get_optionlist('tasbot', "admins")
-	  self.users = self.app.config.get_optionlist('ambot', "users")
+		self.app = tasc.main
+		self.admins = self.app.config.get_optionlist('tasbot', "admins")
+		self.users = self.app.config.get_optionlist('ambot', "users")
+		try:
+			self.msgs = pickle.load(open(self.message_dump, 'rb'))
+		except:
+			self.msgs = dict()
+			
+	def onexit(self):
+		pickle.dump( self.msgs, open(self.message_dump, 'wb'))
