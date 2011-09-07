@@ -65,15 +65,11 @@ class Main(IPlugin):
 		if user in self.msgs:
 			user_msgs = self.msgs[user]
 			for msg in user_msgs:
-				msg.send( self.client.sock )
+				msg.send( self.tasclient.socket )
 			del self.msgs[user]
 
-	def sayprivate(self,user,msg):
-		for line in msg.split("\n"):
-			self.client.sock.send("SAYPRIVATE %s %s\n" % (user,line) )
-
 	def printhelp(self,user):
-		self.sayprivate( user,"To deliver a message to an offline user, pm to this bot: \"USERNAME MESSAGE\"\nYou can queue multiple messages if you like." )
+		self.tasclient.saypm( user,"To deliver a message to an offline user, pm to this bot: \"USERNAME MESSAGE\"\nYou can queue multiple messages if you like." )
 
 	def onsaidprivate(self,user,message):
 		if message == "optout" :
@@ -91,9 +87,9 @@ class Main(IPlugin):
 					self.storeMsg( user, to_user, msg )
 					if to_user in self.user_online:
 						self.deliverPending( to_user )
-						self.sayprivate( user, "the user was found online, the message was sent immediately" )
+						self.tasclient.saypm( user, "the user was found online, the message was sent immediately" )
 					else:
-						self.sayprivate( user, "message queued, will be delivered as soon as the user gets online" )
+						self.tasclient.saypm( user, "message queued, will be delivered as soon as the user gets online" )
 			else:
 				self.printhelp( user )
 
@@ -109,7 +105,6 @@ class Main(IPlugin):
 			self.deliverPending( args[0] )
 
 	def onload(self,tasc):
-	  self.client = tasc
 	  self.app = tasc.main
 	  self.admins = parselist(self.app.config["admins"],',')
 	  self.users = parselist(self.app.config["users"],',')
