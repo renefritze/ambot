@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from tasbot.ParseConfig import *
 import string
-from tasbot.utilities import *
 from time import *
-from tasbot.Plugin import IPlugin
+
+from tasbot.config import Config
+from tasbot.utilities import *
+from tasbot.plugin import IPlugin
+
 
 class PersistentList:
 	filename = ""
@@ -13,6 +15,7 @@ class PersistentList:
 
 	def add(self,item):
 		self.data.append(item)
+
 	def remove(self,item):
 		try:
 			self.data.erase(item)
@@ -25,12 +28,8 @@ class PersistentList:
 	def contains(self,item):
 		return item in data
 
-class Message:
-	from_user = ""
-	to_user = ""
-	added = ""
-	msg_text = ""
 
+class Message:
 	def __init__(self, from_u, to_u, msg ):
 		self.msg_text = msg
 		self.from_user = from_u
@@ -42,6 +41,7 @@ class Message:
 		for line in msg.split("\n"):
 			socket.send("SAYPRIVATE %s %s\n" % (self.to_user,line) )
 
+
 class Main(IPlugin):
 	def __init__(self,name,tasc):
 		IPlugin.__init__(self,name,tasc)
@@ -51,7 +51,6 @@ class Main(IPlugin):
 		self.user_optout = []
 		self.msgs = dict()
 		self.filename = ""
-
 		self.min_pause = 5.0
 
 	def storeMsg( self, from_user, to_user, msg ):
@@ -59,7 +58,6 @@ class Main(IPlugin):
 			if not to_user in self.msgs:
 				self.msgs[to_user] = []
 			self.msgs[to_user].append( Message( from_user, to_user, msg ) )
-
 
 	def deliverPending( self, user ):
 		if user in self.msgs:
@@ -106,5 +104,5 @@ class Main(IPlugin):
 
 	def onload(self,tasc):
 	  self.app = tasc.main
-	  self.admins = parselist(self.app.config["admins"],',')
-	  self.users = parselist(self.app.config["users"],',')
+	  self.admins = self.app.config.get_optionlist('tasbot', "admins")
+	  self.users = self.app.config.get_optionlist('ambot', "users")
