@@ -19,7 +19,7 @@ if __name__=="__main__":
 	pidfile = config.get('tasbot','pidfile','ambot.pid')
 	print 'using pidfile %s'%pidfile
 	inst = tasbot.DefaultApp(configfile,pidfile,r,True)
-	if bool(config.get( 'tasbot','debug', False )):
+	if config.get_bool( 'tasbot','debug', False ):
 		inst.run()#exec in fg
 	else:
 		inst.start()
