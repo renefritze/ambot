@@ -23,7 +23,7 @@ class Message:
 
 class Main(IPlugin):
 	def __init__(self,name,tasc):
-		IPlugin.__init__(self,name,tasc)
+		super(Main,self).__init__(name,tasc)
 		self.chans = []
 		self.admins = []
 		self.user_online = []
@@ -47,17 +47,20 @@ class Main(IPlugin):
 			del self.msgs[user]
 
 	def printhelp(self,user):
-		self.tasclient.saypm( user,"To deliver a message to an offline user, pm to this bot: \"USERNAME MESSAGE\"\nYou can queue multiple messages if you like." )
+		self.tasclient.saypm( user,"To deliver a message to an offline user, pm"
+			"to this bot: \"USERNAME MESSAGE\"\nYou can queue multiple messages if you like." )
 
-	def onsaidprivate(self,user,message):
+	def cmd_saidprivate(self, args, tas_command):
+		message = ''.join(args[1:])
+		user = args[0]
 		if message == "optout" :
-			print "not implemented"
+			self.logger.error("not implemented")
 		if message == "!help":
 			self.printhelp( user )
 		if message == ("help"):
 			self.printhelp( user )
 		else:
-			tokens = message.split()
+			tokens = args[1:]
 			if len(tokens) > 1:
 				to_user = tokens[0]
 				msg = ' '.join( tokens[1:] )
@@ -65,22 +68,23 @@ class Main(IPlugin):
 					self.storeMsg( user, to_user, msg )
 					if to_user in self.user_online:
 						self.deliverPending( to_user )
-						self.tasclient.saypm( user, "the user was found online, the message was sent immediately" )
+						self.tasclient.saypm( user,
+							"the user was found online, the message was sent immediately" )
 					else:
-						self.tasclient.saypm( user, "message queued, will be delivered as soon as the user gets online" )
+						self.tasclient.saypm( user,
+							"message queued, will be delivered as soon as the user gets online" )
 			else:
 				self.printhelp( user )
 
-	def oncommandfromserver(self,command,args,socket):
-		if command == "REMOVEUSER" and len(args) > 0:
-			try:
-				self.user_online.remove( args[0] )
-			except:
-				print ("failed to remove %s from online users" % (args[0]) )
+	def cmd_removeuser(self, args, tas_command):
+		try:
+			self.user_online.remove( args[0] )
+		except:
+			self.logger.info("failed to remove %s from online users" % (args[0]) )
 
-		if command == "ADDUSER" and len(args) > 0:
-			self.user_online.append( args[0] )
-			self.deliverPending( args[0] )
+	def cmd_adduser(self, args, tas_command):
+		self.user_online.append( args[0] )
+		self.deliverPending( args[0] )
 
 	def onload(self,tasc):
 		self.app = tasc.main
@@ -90,6 +94,6 @@ class Main(IPlugin):
 			self.msgs = pickle.load(open(self.message_dump, 'rb'))
 		except:
 			self.msgs = dict()
-			
+
 	def onexit(self):
 		pickle.dump( self.msgs, open(self.message_dump, 'wb'))
